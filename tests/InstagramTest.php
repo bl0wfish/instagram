@@ -38,4 +38,33 @@ class InstagramTest extends TestCase
     {
         (new Instagram())->get('imspeechlessihavenospeech');
     }
+
+    public function testGetEmbed()
+    {
+        $instagram = new Instagram();
+
+        $posts = $instagram->get('jerryseinfeld');
+        $uri = $posts[0]->link;
+
+        $embed = $instagram->getEmbed($uri);
+
+        $this->assertInternalType('object', $embed);
+        $this->assertObjectHasAttribute('html', $embed);
+    }
+
+    /**
+     * @expectedException \Vinkla\Instagram\InstagramException
+     */
+    public function testGetEmbedNotFound()
+    {
+        (new Instagram())->getEmbed('https://www.instagram.com/p/invalidpostid/');
+    }
+
+    /**
+     * @expectedException \Vinkla\Instagram\InstagramException
+     */
+    public function testGetEmbedInvalid()
+    {
+        (new Instagram())->getEmbed('xx');
+    }
 }

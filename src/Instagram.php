@@ -76,4 +76,29 @@ class Instagram
 
         return json_decode((string) $response->getBody())->items;
     }
+
+    /**
+     * Get embed for a post url.
+     *
+     * @param string $postUri
+     *
+     * @return \stdClass
+     */
+    public function getEmbed(string $postUri): \stdClass
+    {
+        $uri = 'https://api.instagram.com/oembed/?url=' . $postUri;
+
+        $request = $this->requestFactory->createRequest('GET', $uri);
+        $response = $this->httpClient->sendRequest($request);
+
+        if ($response->getStatusCode() === 400) {
+            throw new InstagramException('Invalid post uri supplied.');
+        }
+
+        if ($response->getStatusCode() === 404) {
+            throw new InstagramException(sprintf('The post [%s] wasn\'t found.', $postUri));
+        }
+
+        return json_decode((string) $response->getBody());
+    }
 }
