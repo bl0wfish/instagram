@@ -13,8 +13,11 @@ declare(strict_types=1);
 
 namespace Vinkla\Tests\Instagram;
 
+use GuzzleHttp\Psr7\Response;
+use Http\Mock\Client;
 use PHPUnit\Framework\TestCase;
 use Vinkla\Instagram\Instagram;
+use Vinkla\Instagram\InstagramException;
 
 /**
  * This is the instagram test class.
@@ -25,18 +28,26 @@ class InstagramTest extends TestCase
 {
     public function testGet()
     {
-        $items = (new Instagram())->get('jerryseinfeld');
+        $response = new Response(200, [], json_encode([
+            'data' => range(0, 19),
+        ]));
+
+        $client = new Client();
+        $client->addResponse($response);
+
+        $instagram = new Instagram('jerryseinfeld', $client);
+        $items = $instagram->get();
 
         $this->assertInternalType('array', $items);
         $this->assertCount(20, $items);
     }
 
-    /**
-     * @expectedException \Vinkla\Instagram\InstagramException
-     */
-    public function testNotFound()
+    public function testError()
     {
-        (new Instagram())->get('imspeechlessihavenospeech');
+        $this->expectException(InstagramException::class);
+        $this->expectExceptionMessage('The access_token provided is invalid.');
+
+        (new Instagram('imspeechlessihavenospeech'))->get();
     }
 
     public function testGetEmbed()
